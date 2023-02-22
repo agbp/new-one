@@ -44,6 +44,7 @@ jobs:
           # upload_url=$(curl -sL https://api.github.com/repos/${{github.repository}}/releases/latest?access_token=${{ secrets.GITHUB_TOKEN }} | jq -r '.upload_url')
           upload_url=$(curl -sL https://api.github.com/repos/${{github.repository}}/releases/latest?access_token=${{ secrets.GITHUB_TOKEN }} | jq -r '.upload_url')
           echo ::set-output name=upload_url::$upload_url
+          echo $upload_url
 
       - name: Get upload URL 2
         id: geturl2
@@ -64,7 +65,8 @@ jobs:
           # upload_url: https://uploads.github.com/repos/agbp/CYP-1351-test-0/releases/latest/assets{?name,label}
           # upload_url: https://uploads.github.com/repos/agbp/CYP-1351-test-0/releases/93340474/assets{?name,label}
           # upload_url: https://uploads.github.com/repos/${{github.repository}}/releases/latest/assets?{name,label}
-          upload_url: ${{ steps.geturl2.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          # upload_url: ${{ steps.geturl2.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          upload_url: 'https://uploads.github.com/repos/agbp/new-one/releases/93354904/assets{?name,label}'
 
           asset_path: zipped-release.zip
           asset_name: zipped-release.zip
