@@ -48,7 +48,7 @@ jobs:
       - name: Get upload URL 2
         id: geturl2
         run: |
-          upload_url=$(curl -sL https://api.github.com/repos/agbp/lerna3/releases/latest | jq -r '.upload_url')
+          upload_url=$(curl -sL https://api.github.com/repos/agbp/new-one/releases/latest | jq -r '.upload_url')
           echo ::set-output name=upload_url::$upload_url
       - name: Upload Release Asset
         id: upload-release-asset
