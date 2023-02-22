@@ -61,7 +61,7 @@ jobs:
       - name: tag uload url
         uses: pdamianik/release-tag-to-upload-url-action@v1.0.1
         with:
-          tag: v1.0
+          tag: v0.0.1
           token: ${{ github.token }}
 
       - name: Upload Release Asset
