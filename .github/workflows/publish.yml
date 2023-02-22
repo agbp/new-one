@@ -1,0 +1,151 @@
+name: publish
+
+on: workflow_dispatch
+
+jobs:
+  build_and_publish:
+    name: 'Build and publish new version'
+    permissions: write-all
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          # https://github.com/actions/checkout/issues/439
+          fetch-depth: 0
+          ref: master
+
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          always-auth: true
+          node-version: '14.x'
+          registry-url: https://npm.pkg.github.com/
+
+      - name: creating dir structure
+        run: |
+          mkdir WebView
+          mkdir WebView/node_modules
+          mkdir WebView/node_modules/@flowpub
+          mkdir WebView/node_modules/@flowpub/content
+          mkdir WebView/node_modules/@flowpub/core
+          mkdir WebView/node_modules/@flowpub/css-pack
+          mkdir WebView/node_modules/@flowpub/drm-module
+          mkdir WebView/node_modules/@flowpub/glue-modules
+          mkdir WebView/node_modules/@flowpub/glue-rpc
+          mkdir WebView/node_modules/@flowpub/glue-shared
+          mkdir WebView/node_modules/@flowpub/navigator
+          mkdir WebView/node_modules/@flowpub/publication
+          mkdir WebView/node_modules/@flowpub/renderer
+          mkdir WebView/node_modules/@flowpub/webpub-model
+          mkdir WebView/readium-css
+      - name: copy files
+        run: |
+          cp -r packages               WebView
+      - name: zip Runtime
+        uses: thedoctor0/zip-release@0.7.1
+        with:
+          type: 'zip'
+          filename: 'Runtime.zip'
+          directory: 'WebView'
+      - name: move Runtime.zip to root
+        run: mv WebView/Runtime.zip ./
+      - name: upload Runtime.zip
+        uses: actions/upload-artifact@master
+        with:
+          name: Runtime.zip
+          path: Runtime.zip
+
+      # - name: npm ci
+      #   run: |
+      #     npm ci
+      #   env:
+      #     CI: true
+
+      # - name: npx lerna bootstrap
+      #   run: |
+      #     npx lerna bootstrap
+
+      # - name: npm install
+      #   run: |
+      #     npm install
+
+      # - name: clean - remove WebView, package-lock.json, Runtime.zip
+      #   run: |
+      #     rm -rf WebView
+      #     rm package-lock.json
+      #     rm Runtime.zip
+
+      # - name: check git config globals
+      #   run: |
+      #     git init
+      #     git config --global user.name "Andrey Golovin"
+      #     git config --global user.email "Andrey.L.Golovin@gmail.com"
+      #     git config --global --list
+
+      # # https://github.com/lerna/lerna/issues/2162#issuecomment-657853895
+
+      # # https://docs.github.com/en/packages/managing-github-packages-using-github-actions-workflows/publishing-and-installing-a-package-with-github-actions
+      # - name: npm publish
+      #   run: |
+      #     npm run publish -- --yes
+      #   env:
+      #     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+      # - name: download atrifacts Runtime.zip
+      #   if: always()
+      #   uses: actions/download-artifact@master
+      #   with:
+      #     name: Runtime.zip
+
+      # - name: Upload to release
+      #   if: always()
+      #   uses: JasonEtco/upload-to-release@v0.1.1
+      #   env:
+      #     GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      #   with:
+      #     args: Runtime.zip application/zip
+
+      # - name: Name of last release
+      #   uses: actions-ecosystem/action-get-latest-tag@v1
+      #   id: get-latest-tag
+
+      # - name: Echo last tag
+      #   run: |
+      #     echo ${( steps.get-latest-tag.outputs )}
+
+      # - name: Upload Release Asset
+      #   if: always()
+      #   id: upload-release-asset
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: https://github.com/agbp/lerna-getting-started-example--copy-/releases/tag/v0.0.5
+      #     # upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+      #     asset_path: ./Runtime.zip
+      #     asset_name: Runtime.zip
+      #     asset_content_type: application/zip
+      - name: Get upload URL 2
+        id: geturl2
+        run: |
+          upload_url=$(curl -sL https://api.github.com/repos/agbp/lerna-test-2/releases/latest | jq -r '.upload_url')
+          echo ::set-output name=upload_url::$upload_url
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          # upload_url: https://github.com/agbp/CYP-1351-test-0.git/releases/tag/0.0.11
+          # upload_url: 'https://uploads.github.com/repos/agbp/CYP-1351-test-0/releases/93335839/'
+          # upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          # upload_url: ${{ steps.geturl.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          # upload_url: https://api.github.com/repos/${{github.repository}}/releases/latest/assets?name https://api.github.com/repos/${{github.repository}}/releases/latest/assetslabel
+          # upload_url: https://uploads.github.com/repos/agbp/CYP-1351-test-0/releases/latest/assets{?name,label}
+          # upload_url: https://uploads.github.com/repos/agbp/CYP-1351-test-0/releases/93340474/assets{?name,label}
+          # upload_url: https://uploads.github.com/repos/${{github.repository}}/releases/latest/assets?{name,label}
+          upload_url: ${{ steps.geturl2.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+
+          asset_path: Runtime.zip
+          asset_name: Runtime.zip
+          asset_content_type: application/zip
