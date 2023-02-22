@@ -38,6 +38,13 @@ jobs:
       #     echo "upload url"
       #     echo === + ${{ steps.create_release.outputs.upload_url }} + ===
 
+      - name: Get upload URL 0
+        id: geturl0
+        run: |
+          upload_url=$(curl -sL https://api.github.com/repos/${{github.repository}}/releases/latest?access_token=${{ secrets.GITHUB_TOKEN }} | jq -r '.upload_url')
+          echo ::set-output name=upload_url::$upload_url
+          echo $upload_url
+
       - name: Get upload URL
         id: geturl
         run: |
